@@ -253,6 +253,7 @@ class CurrentLine:
         # to break in multiple places, depending on condition.
         self.space_break_hint = None
         self.hyphen_break_hint = None
+        self.is_first_space = True
 
     def add_character(
         self,
@@ -279,15 +280,16 @@ class CurrentLine:
         active_fragment = self.fragments[-1]
 
         if character == SPACE:
-            self.space_break_hint = SpaceHint(
-                original_fragment_index,
-                original_character_index,
-                len(self.fragments),
-                len(active_fragment.characters),
-                self.width,
-                self.number_of_spaces,
-            )
-            self.number_of_spaces += 1
+            if self.is_first_space is False:
+                self.space_break_hint = SpaceHint(
+                    original_fragment_index,
+                    original_character_index,
+                    len(self.fragments),
+                    len(active_fragment.characters),
+                    self.width,
+                    self.number_of_spaces,
+                )
+                self.number_of_spaces += 1
         elif character == SOFT_HYPHEN and not self.print_sh:
             self.hyphen_break_hint = HyphenHint(
                 original_fragment_index,
@@ -301,6 +303,8 @@ class CurrentLine:
                 graphics_state,
                 k,
             )
+        elif character != SPACE:
+            self.is_first_space = False
 
         if character != SOFT_HYPHEN or self.print_sh:
             self.width += character_width
